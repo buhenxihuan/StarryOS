@@ -51,7 +51,7 @@ impl<T> Deref for AssumeSync<T> {
         &self.0
     }
 }
-
+#[cfg(feature = "tee")]
 pub trait TeeSessionCtxTrait {
     fn as_any(&self) -> &dyn Any;
 }
@@ -86,8 +86,8 @@ pub struct Thread {
 
     /// Ready to exit
     exit: AtomicBool,
-
     /// Tee session context
+    #[cfg(feature = "tee")]
     pub tee_session_ctx: Mutex<Option<Box<dyn TeeSessionCtxTrait>>>,
 }
 
@@ -102,6 +102,7 @@ impl Thread {
             time: AssumeSync(RefCell::new(TimeManager::new())),
             oom_score_adj: AtomicI32::new(200),
             exit: AtomicBool::new(false),
+            #[cfg(feature = "tee")]
             tee_session_ctx: Mutex::new(None),
         })
     }
@@ -149,6 +150,7 @@ impl Thread {
     }
 
     /// Set the tee session context.
+    #[cfg(feature = "tee")]
     pub fn set_tee_session_ctx(&self, ctx: Box<dyn TeeSessionCtxTrait>) {
         let mut guard = self.tee_session_ctx.lock();
         if guard.is_none() {
